@@ -88,6 +88,8 @@ test("Unsubscribe test string (chained unsubscribe)", function() {
     pubsub.publish('hello/world1');
     ok(iterator === 2, 'Second subscribtion executed properly');
     pubsub.unsubscribe('hello/world1');
+    pubsub.publish('hello/world1');
+    ok(iterator === 2, 'Publish after unsubscribe works correctly');
 });
 
 test("Publish test (basic)", function() {
