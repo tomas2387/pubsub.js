@@ -45,12 +45,6 @@
 							subscription.callback.apply(subscription.object, args);
 						}, 4);
 					} else {
-					    if(options.log) {
-                            var exec = /function ([^(]*)/.exec(subscription.callback + '');
-                            if(exec[1] !== 'subscribtionOnceCallback') {
-                                console.log(exec);
-                            }
-                        }
 						subscription.callback.apply(subscription.object, args);
 					}
 				}
@@ -290,9 +284,6 @@
 					subscription = null;
 
 				var subscriptionCallback = function subscribtionOnceCallback() {
-				        if(options.log) {
-                            console.log(/function ([^(]*)/.exec(callback + ''));
-                        }
 						callback.apply(this, arguments);
 						that.unsubscribe(subscription);
 					};
