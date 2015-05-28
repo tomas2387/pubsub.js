@@ -41,6 +41,84 @@ test("Unsubscribe test string (basic)", function() {
     ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
 });
 
+test("Unsubscribe test string (advanced)", function() {
+    var values = {};
+    var param1 = "some param1";
+    var param2 = "some param2";
+
+    pubsub.subscribe('hello/great/world5', function(param1, param2) {
+        values = {
+            'param1' : 'world5',
+            'param2' : 'world5'
+        };
+    });
+    pubsub.subscribe('hello/great/world4', function(param1, param2) {
+        values = {
+            'param1' : param1,
+            'param2' : param2
+        };
+    });
+    pubsub.publish('hello/great/world4', [param1, param2]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value before unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+    pubsub.unsubscribe('hello/great/world4');
+    pubsub.publish('hello/great/world4', [null, null]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+    pubsub.publish('hello/great/world5', [null, null]);
+    ok(values.param1 === 'world5' && values.param2 === 'world5', 'Values has proper value after unsubscribe: '+values.param1+'==='+'world5'+' & '+values.param2+'==='+'world5');
+});
+
+test("Unsubscribe test string (master)", function() {
+    var values = {};
+    var param1 = "some param1";
+    var param2 = "some param2";
+
+    pubsub.subscribe('hello/great/world5', function(param1, param2) {
+        values = {
+            'param1' : 'world5',
+            'param2' : 'world5'
+        };
+    });
+    pubsub.subscribe('hello/great/world4', function(param1, param2) {
+        values = {
+            'param1' : param1,
+            'param2' : param2
+        };
+    });
+    pubsub.publish('hello/great/world4', [param1, param2]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value before unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+    pubsub.unsubscribe('hello/great');
+    pubsub.publish('hello/great/world4', [null, null]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+    pubsub.publish('hello/great/world5', [null, null]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+});
+
+test("Unsubscribe test string with last character with separator", function() {
+    var values = {};
+    var param1 = "some param1";
+    var param2 = "some param2";
+
+    pubsub.subscribe('hello/great/world5', function(param1, param2) {
+        values = {
+            'param1' : 'world5',
+            'param2' : 'world5'
+        };
+    });
+    pubsub.subscribe('hello/great/world4', function(param1, param2) {
+        values = {
+            'param1' : param1,
+            'param2' : param2
+        };
+    });
+    pubsub.publish('hello/great/world4', [param1, param2]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value before unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+    pubsub.unsubscribe('hello/great/');
+    pubsub.publish('hello/great/world4', [null, null]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+    pubsub.publish('hello/great/world5', [null, null]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+});
+
 test("Unsubscribe test (chained unsubscribe)", function() {
 	var iterator = 0;
 

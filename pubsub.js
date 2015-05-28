@@ -165,9 +165,12 @@
 			}
 			var nsString = subscribeObject.namespace,
 				eventObject = subscribeObject.event,
-				parts = nsString.split(options.separator),
-				nsObject, parentNsObject,
-				i = 0;
+				nsObject, parentNsObject;
+
+            if(nsString[nsString.length-1] === options.separator) {
+                nsString = nsString.slice(0, -1);
+            }
+            var parts = nsString.split(options.separator);
 
             if(options.log) {
 				console.log('unsubscribe', nsString);
@@ -175,7 +178,7 @@
 
 			//Iterating through _eventObject to find proper nsObject
 			nsObject = _eventObject;
-			for (i = 0; i < parts.length; i += 1) {
+			for (var i = 0; i < parts.length; i += 1) {
 				if (typeof nsObject[parts[i]] === "undefined") {
 					if(options.log) {
 						console.error('There is no ' + nsString + ' subscription');
