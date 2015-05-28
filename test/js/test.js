@@ -563,6 +563,57 @@ test("Subscription wildcard test (hello/*/*/world)", function() {
 	ok(number === 3, 'Subscription wildcard is working properly');
 });
 
+test('publish with steroids propagates the event to subsecuents subscriptions', function() {
+
+    var musclesLeftArm = 1;
+    var musclesRightArm = 1;
+
+    var newPubsub = pubsub.newInstance();
+
+    newPubsub.publish('hello/great/black', [1500, 1100], {steroids:true});
+
+    newPubsub.subscribe('hello/great/black', function(right, left) {
+        musclesRightArm = right;
+        musclesLeftArm = left;
+    }, {steroids: true});
+
+    ok(musclesRightArm===1500 && musclesLeftArm === 1100, 'Publish with steroids worked correctly. '+musclesRightArm+"==="+1500+' && '+musclesLeftArm+"==="+1100+' typeof '+typeof musclesRightArm+' === '+typeof 1500);
+});
+
+test('publish with steroids but subscribe not with steroids works as normal', function() {
+
+    var musclesLeftArm = 1;
+    var musclesRightArm = 1;
+
+    var newPubsub = pubsub.newInstance();
+
+    newPubsub.publish('hello/great/black', [1500, 1100], {steroids:true});
+
+    newPubsub.subscribe('hello/great/black', function(right, left) {
+        musclesRightArm = right;
+        musclesLeftArm = left;
+    });
+
+    ok(musclesRightArm===1 && musclesLeftArm === 1, 'Publish with steroids worked correctly. '+musclesRightArm+"==="+1+' && '+musclesLeftArm+"==="+1+' typeof '+typeof musclesRightArm+' === '+typeof 1);
+});
+
+test('publish with no steroids but subscribe with steroids works as normal', function() {
+
+    var musclesLeftArm = 1;
+    var musclesRightArm = 1;
+
+    var newPubsub = pubsub.newInstance();
+
+    newPubsub.publish('hello/great/black', [1500, 1100]);
+
+    newPubsub.subscribe('hello/great/black', function(right, left) {
+        musclesRightArm = right;
+        musclesLeftArm = left;
+    }, {steroids:true});
+
+    ok(musclesRightArm===1 && musclesLeftArm === 1, 'Publish with steroids worked correctly. '+musclesRightArm+"==="+1+' && '+musclesLeftArm+"==="+1+' typeof '+typeof musclesRightArm+' === '+typeof 1);
+});
+
 asyncTest("Async pubsub test (differences)", function() {
 	ok(typeof pubsub.newInstance === 'function', "pubsub has method newInstance");
 	var number1 = 0;

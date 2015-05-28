@@ -12,6 +12,7 @@
 
 	function Pubsub(config) {
 		var _eventObject = {};
+        var _steroidsEvents = {};
 		var options = {
 			separator : (config && config.separator) ?  config.separator : '/',
 			recurrent : (config && typeof config.recurrent === 'boolean') ?  config.recurrent :  (false),
@@ -95,7 +96,7 @@
 			// no namespace = leave publish
 			if (typeof nsObject[iPart] === "undefined") {
 				if(options.log) {
-					console.warn('There is no ' + nsString + ' subscription');
+					console.warn('There is no ' + nsObject[iPart] + ' subscription');
 				}
 				return;
 			}
@@ -208,13 +209,14 @@
 			 * @param [params] paramaters possible:
 			 *        @param [params.recurrent] bool should execution be bubbled throught namespace
 			 *        @param [params.depth] integer how many namespaces separated by dots will be executed
+			 *        @param [params.steroids] if the message will be delivered to next subscribes with the same nsString
 			 */
 			publish : function(nsString, args, params) {
-				var that = this,
-					parts = nsString.split(options.separator),
+				var parts = nsString.split(options.separator),
 					recurrent = (typeof params === 'object' && params.recurrent) ? params.recurrent : options.recurrent, // bubbles event throught namespace if true
 					depth = (typeof params === 'object' && params.depth) ? params.depth : null,
 					async = (typeof params === 'object' && params.async) ? params.async : options.async,
+					steroids = (typeof params === 'object' && params.steroids) ? true : false,
 					partsLength = parts.length;
 
 				if(!parts.length) {
@@ -224,11 +226,16 @@
 					return;
 				}
 
+                if(steroids) {
+                    _steroidsEvents[nsString] = args;
+                }
+
                 if(options.log) console.groupCollapsed("publish", nsString, args, params);
 				publish(_eventObject, args, parts, {
 					recurrent : recurrent,
 					depth : depth,
 					parts : parts,
+                    async : async,
 					nsString : nsString,
 					partsLength : partsLength
 				});
@@ -244,7 +251,12 @@
 			subscribe : function(nsString, callback, params) {
 				var that = this,
 					context = (params && typeof params.context !== 'undefined') ? params.context : null,
+                    steroids = (params && typeof params.steroids) ? true : false,
 					subscriptions = [];
+
+                if(steroids && _steroidsEvents[nsString]) {
+                    callback.apply(context, _steroidsEvents[nsString]);
+                }
 
 				// array of callbacks - multiple subscription
 				if(typeof callback === 'object' && callback instanceof Array) {
@@ -314,11 +326,11 @@
 			},
 			/**
 			 * newInstance - makes new instance of pubsub object with its own config
-			 * @param config instance configuration
-			 *        @param config.separator separator (default is "/")
-			 *        @param config.recurrent should publish events be bubbled through namespace
-			 *        @param config.async should publish events be asynchronous - not blocking function execution
-			 *        @param config.log console.warn/error every problem
+			 * @param [config] instance configuration
+			 *        @param [config.separator] separator (default is "/")
+			 *        @param [config.recurrent] should publish events be bubbled through namespace
+			 *        @param [config.async] should publish events be asynchronous - not blocking function execution
+			 *        @param [config.log] console.warn/error every problem
 			 */
 			newInstance : function(config) {
 				return new Pubsub(config);
