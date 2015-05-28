@@ -95,6 +95,31 @@ Default pubsub.js configuration:
 	//nothing happen - we've previously unsubscribed that subscription
 ```
 
+### Unsubscribe (by string)
+
+```javascript
+	//subscribe to 'hello/world' namespace
+	pubsub.subscribe('hello/world', function() {
+		console.log('hello world!');
+	});
+
+	//other subscription to 'hello/world' namespace
+	pubsub.subscribe('hello/world', function() {
+        console.log('other hello world!');
+    });
+
+	//publish event on 'hello/world' namespace
+	pubsub.publish('hello/world');
+	//prints "hello world" inside console
+	//prints "other hello world" inside console
+
+	//unsubscribe all subscriptions that matches 'hello/world'
+	pubsub.unsubscribe('hello/world');
+	//publish event on 'hello/world' namespace
+	pubsub.publish('hello/world');
+	//nothing happens - we've previously unsubscribed that subscription
+```
+
 ### Changing default configuration
 
 ***Browser***
