@@ -117,7 +117,10 @@
 
             //subscribe with steroids, if there was a publish for this event before, then get it!
             if(steroids && _steroidsEvents[nsString]) {
-                callback.apply(null, _steroidsEvents[nsString]);
+                if(options.log) {
+                    console.log('Subscribe with steroids -> inmediate call to ', callback);
+                }
+                callback.apply(contextObject, _steroidsEvents[nsString].args);
             }
 
 			//Iterating through _eventObject to find proper nsObject
@@ -207,7 +210,7 @@
 				}
 
                 if(steroids) {
-                    _steroidsEvents[nsString] = args;
+                    _steroidsEvents[nsString] = {args:args};
                 }
 
                 if(options.log) console.groupCollapsed("publish", nsString, args, params);
@@ -262,7 +265,6 @@
 			 */
 			subscribeOnce : function(nsString, callback, params) {
 				var that = this,
-					context = (params && typeof params.context !== 'undefined') ? params.context : null,
 					subscription = null;
 
 				var subscriptionCallback = function subscribtionOnceCallback() {
@@ -270,7 +272,7 @@
 						that.unsubscribe(subscription);
 					};
 
-				subscription = that.subscribe.apply(that, [nsString, subscriptionCallback, context]);
+				subscription = that.subscribe.apply(that, [nsString, subscriptionCallback, params]);
 				return subscription;
 			},
 			/**
