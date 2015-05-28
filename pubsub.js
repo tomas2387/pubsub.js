@@ -1,6 +1,7 @@
-(function(scope) {
+;(function(scope) {
+    /* global global,define,exports,pubsubConfig */
 	'use strict';
-	var pubsubInstance = null;
+	var pubsubInstance;
 	var pubsubConfig = null;
 
 	if(typeof pubsub === 'object') {
@@ -21,10 +22,9 @@
 		};
 
 		function forEach(dataArray, callback) {
-			var i = 0,
-				arrayLength = dataArray.length;
+			var arrayLength = dataArray.length;
 
-			for(i = 0; i < arrayLength; i++) {
+			for(var i = 0; i < arrayLength; i++) {
 				callback(i, dataArray[i]);
 			}
 		}
@@ -46,7 +46,7 @@
 						}, 4);
 					} else {
 					    if(options.log) {
-                            var exec = /function ([^(]*)/.exec(subscribtion.callback + '');
+                            var exec = /function ([^(]*)/.exec(subscription.callback + '');
                             if(exec[1] !== 'subscribtionOnceCallback') {
                                 console.log(exec);
                             }
@@ -135,8 +135,8 @@
 			var parts = nsString.split(options.separator),
 				nsObject, //Namespace object to which we attach event
 				givenObjectSet = (contextObject) ? true : false,
-				eventObject = null,
-				i = 0;
+				eventObject,
+                i;
 
 			contextObject = (givenObjectSet) ? contextObject : callback;
 
