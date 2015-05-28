@@ -105,27 +105,7 @@
 			publish(nsObject, args, parts, options);
 		}
 
-		function executeSubscribeWildcard(nsObject, args, options) {
-			var parts = options.parts;
-			var async = options.async;
-			var nextPart = null;
-
-			if(parts.length === 0) {
-				executeCallback(nsObject._events, args, async);
-			} else {
-				nextPart = parts.shift();
-
-				if(nsObject[nextPart]) {
-					executeSubscribeWildcard(nsObject[nextPart], args, {
-						parts : parts,
-						async : async,
-						nsString : options.nsString
-					});
-				}
-			}
-		}
-
-		function subscribe(nsString, callback, contextObject) {
+		function subscribe(nsString, callback, contextObject, steroids) {
 			var parts = nsString.split(options.separator),
 				nsObject, //Namespace object to which we attach event
 				givenObjectSet = (contextObject) ? true : false,
@@ -133,6 +113,12 @@
                 i;
 
 			contextObject = (givenObjectSet) ? contextObject : callback;
+            steroids = !!steroids;
+
+            //subscribe with steroids, if there was a publish for this event before, then get it!
+            if(steroids && _steroidsEvents[nsString]) {
+                callback.apply(null, _steroidsEvents[nsString]);
+            }
 
 			//Iterating through _eventObject to find proper nsObject
 			nsObject = _eventObject;
@@ -176,7 +162,7 @@
 			for (var i = 0; i < parts.length; i += 1) {
 				if (typeof nsObject[parts[i]] === "undefined") {
 					if(options.log) {
-						console.error('There is no ' + nsString + ' subscription');
+						console.warn('There is no ' + nsString + ' subscription');
 					}
 					return null;
 				}
@@ -248,26 +234,22 @@
                     steroids = (params && params.steroids) ? true : false,
 					subscriptions = [];
 
-                if(steroids && _steroidsEvents[nsString]) {
-                    callback.apply(context, _steroidsEvents[nsString]);
-                }
-
-				// array of callbacks - multiple subscription
+				//if we have array of callbacks - multiple subscribtion
 				if(typeof callback === 'object' && callback instanceof Array) {
 					forEach(callback, function(number) {
 						var oneCallback = callback[number];
 
-						subscriptions =	subscriptions.concat(that.subscribe.apply(that, [nsString, oneCallback, context]));
+						subscriptions =	subscriptions.concat(that.subscribe.apply(that, [nsString, oneCallback, context, steroids]));
 					});
 				// array of namespaces - multiple subscription
 				} else if(typeof nsString === 'object' && nsString instanceof Array) {
 					forEach(nsString, function(number) {
 						var namespace = nsString[number];
 
-						subscriptions =	subscriptions.concat(that.subscribe.apply(that, [namespace, callback, context]));
+						subscriptions =	subscriptions.concat(that.subscribe.apply(that, [namespace, callback, context, steroids]));
 					});
 				} else {
-					return subscribe.apply(that, arguments);
+					return subscribe.apply(that, [nsString, callback, context, steroids]);
 				}
 				return subscriptions;
 			},
