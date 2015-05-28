@@ -251,7 +251,7 @@
 			subscribe : function(nsString, callback, params) {
 				var that = this,
 					context = (params && typeof params.context !== 'undefined') ? params.context : null,
-                    steroids = (params && typeof params.steroids) ? true : false,
+                    steroids = (params && params.steroids) ? true : false,
 					subscriptions = [];
 
                 if(steroids && _steroidsEvents[nsString]) {
