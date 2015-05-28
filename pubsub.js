@@ -44,6 +44,12 @@
 							subscription.callback.apply(subscription.object, args);
 						}, 4);
 					} else {
+					    if(options.log) {
+                            var exec = /function ([^(]*)/.exec(subscribtion.callback + '');
+                            if(exec[1] !== 'subscribtionOnceCallback') {
+                                console.log(exec);
+                            }
+                        }
 						subscription.callback.apply(subscription.object, args);
 					}
 				}
@@ -160,8 +166,12 @@
 			var nsString = subscribeObject.namespace,
 				eventObject = subscribeObject.event,
 				parts = nsString.split(options.separator),
-				nsObject,
+				nsObject, parentNsObject,
 				i = 0;
+
+            if(options.log) {
+				console.log('unsubscribe', nsString);
+			}
 
 			//Iterating through _eventObject to find proper nsObject
 			nsObject = _eventObject;
@@ -172,24 +182,29 @@
 					}
 					return null;
 				}
+                parentNsObject = nsObject;
 				nsObject = nsObject[parts[i]];
 			}
 
-			forEach(nsObject._events, function(eventId){
-				if(nsObject._events[eventId] === eventObject) {
-					nsObject._events.splice(eventId, 1);
-				}
-			});
+            if(!eventObject) {
+                delete parentNsObject[parts[parts.length - 1]];
+            } else {
+                forEach(nsObject._events, function(eventId){
+                    if(nsObject._events[eventId] === eventObject) {
+                        nsObject._events.splice(eventId, 1);
+                    }
+                });
+            }
 		}
 
 		return {
 			/**
 			 * Publish event
 			 * @param nsString string namespace string splited by dots
-			 * @param args array of arguments given to callbacks
-			 * @param params paramaters possible:
-			 *        @param recurrent bool should execution be bubbled throught namespace
-			 *        @param depth integer how many namespaces separated by dots will be executed
+			 * @param [args] array of arguments given to callbacks
+			 * @param [params] paramaters possible:
+			 *        @param [params.recurrent] bool should execution be bubbled throught namespace
+			 *        @param [params.depth] integer how many namespaces separated by dots will be executed
 			 */
 			publish : function(nsString, args, params) {
 				var that = this,
@@ -206,6 +221,7 @@
 					return;
 				}
 
+                if(options.log) console.groupCollapsed("publish", nsString, args, params);
 				publish(_eventObject, args, parts, {
 					recurrent : recurrent,
 					depth : depth,
@@ -213,13 +229,14 @@
 					nsString : nsString,
 					partsLength : partsLength
 				});
+                if(options.log) console.groupEnd();
 			},
 			/**
 			 * Subscribe event
 			 * @param nsString string namespace string splited by dots
 			 * @param callback function function executed after publishing event
-			 * @param params given params
-			 *		@param context object/nothing Optional object which will be used as "this" in callback
+			 * @param [params] given params
+			 *		@param [params.context] object/nothing Optional object which will be used as "this" in callback
 			 */
 			subscribe : function(nsString, callback, params) {
 				var that = this,
@@ -249,15 +266,18 @@
 			 * subscribeOnce event - subscribe once to some event, then unsubscribe immadiately
 			 * @param nsString string namespace string splited by dots
 			 * @param callback function function executed after publishing event
-			 * @param params given params
-			 *		@param context object/nothing Optional object which will be used as "this" in callback
+			 * @param [params] given params
+			 *		@param [params.context] object/nothing Optional object which will be used as "this" in callback
 			 */
 			subscribeOnce : function(nsString, callback, params) {
 				var that = this,
 					context = (params && typeof params.context !== 'undefined') ? params.context : null,
 					subscription = null;
 
-				var subscriptionCallback = function() {
+				var subscriptionCallback = function subscribtionOnceCallback() {
+				        if(options.log) {
+                            console.log(/function ([^(]*)/.exec(callback + ''));
+                        }
 						callback.apply(this, arguments);
 						that.unsubscribe(subscription);
 					};
@@ -272,8 +292,14 @@
 			unsubscribe : function(subscribeObject) {
 				var that = this;
 
-				//if we have array of callbacks - multiple subscription
-				if(subscribeObject instanceof Array) {
+				if(typeof subscribeObject === "string") {
+                    var objeto = {
+                        namespace: subscribeObject,
+                        event: null
+                    };
+                    unsubscribe.apply(that, [objeto]);
+                } else if(subscribeObject instanceof Array) {
+                    //if we have array of callbacks - multiple subscription
 					forEach(subscribeObject, function(number) {
 						var oneSubscribtion = subscribeObject[number];
 
@@ -286,10 +312,10 @@
 			/**
 			 * newInstance - makes new instance of pubsub object with its own config
 			 * @param config instance configuration
-			 *        @param separator separator (default is "/")
-			 *        @param recurrent should publish events be bubbled through namespace
-			 *        @param async should publish events be asynchronous - not blocking function execution
-			 *        @param log console.warn/error every problem
+			 *        @param config.separator separator (default is "/")
+			 *        @param config.recurrent should publish events be bubbled through namespace
+			 *        @param config.async should publish events be asynchronous - not blocking function execution
+			 *        @param config.log console.warn/error every problem
 			 */
 			newInstance : function(config) {
 				return new Pubsub(config);
@@ -309,7 +335,7 @@
 	}
 
 	if(typeof window === 'object') {
-		window.pubsub = pubsubInstance;	
+		window.pubsub = pubsubInstance;
 		if(window !== scope) {
 			scope.pubsub = pubsubInstance;
 		}

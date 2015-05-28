@@ -23,6 +23,23 @@ test("Unsubscribe test (basic)", function() {
 	pubsub.publish('hello/world4', [null, null]);
 	ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value');
 });
+test("Unsubscribe test string (basic)", function() {
+    var values = {};
+    var param1 = "some param1";
+    var param2 = "some param2";
+
+    pubsub.subscribe('hello/world4', function(param1, param2) {
+        values = {
+            'param1' : param1,
+            'param2' : param2
+        };
+    });
+    pubsub.publish('hello/world4', [param1, param2]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value before unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+    pubsub.unsubscribe('hello/world4');
+    pubsub.publish('hello/world4', [null, null]);
+    ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+});
 
 test("Unsubscribe test (chained unsubscribe)", function() {
 	var iterator = 0;
@@ -44,17 +61,20 @@ test("Unsubscribe test (chained unsubscribe)", function() {
 	pubsub.unsubscribe(subscription2);
 });
 
-test("Publish test (flat)", function() {
-	var iterator = 0;
-	var subscription = pubsub.subscribe('hello', function() {
-		iterator += 1;
-	});
-	pubsub.publish('hello');
-	pubsub.publish('world');
-	ok(iterator === 1, 'Done has proper value');
-	pubsub.unsubscribe(subscription);
-	pubsub.publish('hello');
-	ok(iterator === 1, 'Done has proper value');
+test("Unsubscribe test string (chained unsubscribe)", function() {
+    var iterator = 0;
+
+    pubsub.subscribe('hello/world1', function() {
+        iterator++;
+        pubsub.unsubscribe('hello/world1');
+    });
+    pubsub.subscribe('hello/world1', function() {
+        iterator++;
+    });
+
+    pubsub.publish('hello/world1');
+    ok(iterator === 2, 'Second subscribtion executed properly');
+    pubsub.unsubscribe('hello/world1');
 });
 
 test("Publish test (basic)", function() {
@@ -200,8 +220,31 @@ test("Multiple subscription1 (one namespace, many callbacks)", function() {
 	ok(number === 3, 'Multiple subscription after unsubscribe is working properly');
 });
 
+test("Multiple subscribtion1 string unsubscribe (one namespace, many callbacks)", function() {
+    var number = 0;
 
-test("Multiple subscription2 (many namespaces, one callback)", function() {
+    var subscribtion = pubsub.subscribe('hello/world', [
+        function() {
+            number++;
+        },
+        function() {
+            number++;
+        },
+        function() {
+            number++;
+        }
+    ]);
+
+    pubsub.publish('hello/world');
+    ok(number === 3, 'Multiple subscribtion before unsubscribe is working properly');
+    pubsub.unsubscribe('hello/world');
+
+    pubsub.publish('hello/world');
+    ok(number === 3, 'Multiple subscribtion after unsubscribe is working properly');
+});
+
+
+test("Multiple subscribtion2 (many namespaces, one callback)", function() {
 	var number = 0;
 
 	var subscription = pubsub.subscribe(['hello/world', 'goodbye/world'], function() {
@@ -220,7 +263,27 @@ test("Multiple subscription2 (many namespaces, one callback)", function() {
 	ok(number === 2, 'Subscribtion to goodbye/world after unsubscribe is working properly');
 });
 
-test("Multiple subscription3 (many namespaces, many callbacks)", function() {
+test("Multiple subscribtion2 string unsubscription (many namespaces, one callback)", function() {
+    var number = 0;
+
+    pubsub.subscribe(['hello/world', 'goodbye/world'], function() {
+        number++;
+    });
+
+    pubsub.publish('hello/world');
+    ok(number === 1, 'Subscribtion to hello/world before unsubscribe is working properly');
+    pubsub.publish('goodbye/world');
+    ok(number === 2, 'Subscribtion to goodbye/world before unsubscribe is working properly');
+    pubsub.unsubscribe('hello/world');
+    pubsub.unsubscribe('goodbye/world');
+
+    pubsub.publish('hello/world');
+    ok(number === 2, 'Subscribtion to hello/world after unsubscribe is working properly');
+    pubsub.publish('goodbye/world');
+    ok(number === 2, 'Subscribtion to goodbye/world after unsubscribe is working properly');
+});
+
+test("Multiple subscribtion3 (many namespaces, many callbacks)", function() {
 	var number1 = 0;
 	var number2 = 0;
 
@@ -244,6 +307,33 @@ test("Multiple subscription3 (many namespaces, many callbacks)", function() {
 	pubsub.publish('goodbye/world');
 	ok(number1 === 2, 'Subscribtion to goodbye/world after unsubscribe is working properly (number1)');
 	ok(number2 === 4, 'Subscribtion to goodbye/world after unsubscribe is working properly (number2)');
+});
+
+test("Multiple subscribtion3 usubscribe string (many namespaces, many callbacks)", function() {
+    var number1 = 0;
+    var number2 = 0;
+
+    var subscribtion = pubsub.subscribe(['hello/world', 'goodbye/world'], [function() {
+        number1++;
+    }, function() {
+        number2+=2;
+    }]);
+
+    pubsub.publish('hello/world');
+    ok(number1 === 1, 'Subscribtion to hello/world before unsubscribe is working properly (number1)');
+    ok(number2 === 2, 'Subscribtion to hello/world before unsubscribe is working properly (number2)');
+    pubsub.publish('goodbye/world');
+    ok(number1 === 2, 'Subscribtion to goodbye/world before unsubscribe is working properly (number1)');
+    ok(number2 === 4, 'Subscribtion to goodbye/world before unsubscribe is working properly (number2)');
+    pubsub.unsubscribe('goodbye/world');
+    pubsub.unsubscribe('hello/world');
+
+    pubsub.publish('hello/world');
+    ok(number1 === 2, 'Subscribtion to hello/world after unsubscribe is working properly (number1)');
+    ok(number2 === 4, 'Subscribtion to hello/world after unsubscribe is working properly (number2)');
+    pubsub.publish('goodbye/world');
+    ok(number1 === 2, 'Subscribtion to goodbye/world after unsubscribe is working properly (number1)');
+    ok(number2 === 4, 'Subscribtion to goodbye/world after unsubscribe is working properly (number2)');
 });
 
 test("Pubsub newInstance with own namespaces scope", function() {
