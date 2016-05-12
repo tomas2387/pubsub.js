@@ -1,11 +1,15 @@
 pubsub.js
 =========
 
-JavaScript pubsub implementation with wildcards, inheritance and multisubscriptions
+Dependency free JavaScript pubsub implementation with wildcards, inheritance and multisubscriptions
+
+[![Build Status](https://travis-ci.org/Sahadar/pubsub.js.svg?branch=master)](https://travis-ci.org/Sahadar/pubsub.js)
+[![Dependency Status](https://david-dm.org/Sahadar/pubsub.js.svg)](https://david-dm.org/Sahadar/pubsub.js)
+[![License](https://img.shields.io/npm/l/pubsub.js.svg)](http://opensource.org/licenses/MIT)
+
+[Web page](https://sahadar.github.io/pubsub/)
 
 [NPM pubsub.js link](https://npmjs.org/package/pubsub.js)
-
-[pubsub.js performance compare test (to jQuery events)](http://jsperf.com/pubsub-js-vs-jquery-events/14)
 
 ## Features
 
@@ -25,7 +29,7 @@ JavaScript pubsub implementation with wildcards, inheritance and multisubscripti
 * Written with TDD
 * Possibility to make new instances of pubsub with private namespaces scope
 * Possibility to publish async events
-* Compiled + gzipped weight only 1kB
+* Compiled + gzipped weighs only 1kB
 * Works also on IE 6+
 
 ## Installation
@@ -347,6 +351,12 @@ Default pubsub.js configuration:
 ```
 
 ## Changelog
+* v1.4.3
+	* Fix issue #7 - "recurrent" option, new test cases
+* v1.4.2
+	* Documentation changes
+* v1.4.1
+	* Travis integration
 * v1.4.0
 	* Added subscription wildcard "*"
 * v1.3.1

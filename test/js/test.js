@@ -119,6 +119,28 @@ test("Unsubscribe test string with last character with separator", function() {
     ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
 });
 
+test("Unsubscribe test string (two bind functions)", function() {
+	var values = {};
+	var param1 = "+1+1";
+	var param2 = "+2+2";
+    pubsub.subscribe('hello/world4/great', function() {
+        values.param1 = (values.param1?values.param1:'')+'+3';
+        values.param2 = (values.param2?values.param2:'')+'+4';
+    });
+	pubsub.subscribe('hello/world4/friends', function() {
+		values.param1 = (values.param1?values.param1:'')+'+1';
+		values.param2 = (values.param2?values.param2:'')+'+2';
+	});
+	pubsub.subscribe('hello/world4/friends', function() {
+		values.param1 = (values.param1?values.param1:'')+'+1';
+		values.param2 = (values.param2?values.param2:'')+'+2';
+	});
+	pubsub.publish('hello/world4/friends', [param1, param2]);
+	ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value before unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+	pubsub.unsubscribe('hello/world4');
+	pubsub.publish('hello/world4', [null, null]);
+	ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value after unsubscribe: '+values.param1+'==='+param1+' & '+values.param2+'==='+param2);
+});
 test("Unsubscribe test (chained unsubscribe)", function() {
 	var iterator = 0;
 
@@ -238,6 +260,71 @@ test("Inheritance test (basic)", function() {
 	});
 	ok(values.param1 === param1 && values.param2 === param2, 'Values has proper value');
 	pubsub.unsubscribe(subscription);
+});
+
+test("Inheritance test (Issue #7)", function() {
+	'use strict';
+
+	var instance = pubsub.newInstance({
+	   recurrent: true
+	});
+	var counter = 0;
+
+	var subscription = instance.subscribe('hello', function() {
+	   counter += 1;
+	});
+
+	instance.publish('hello', []);
+
+	equal(counter, 1, 'Counter executed once');
+	instance.unsubscribe(subscription);
+});
+
+test("Inheritance test2 (Issue #7)", function() {
+	'use strict';
+
+	var instance = pubsub.newInstance({
+	   recurrent: true
+	});
+	var counter = 0;
+
+	var subscription = instance.subscribe('hello/world', function() {
+	   counter += 1;
+	});
+
+	instance.publish('hello/world');
+
+	equal(counter, 1, 'Counter executed once');
+	instance.unsubscribe(subscription);
+});
+
+test("Inheritance test (Depth)", function() {
+	var values = {};
+	var param1 = "some param1";
+	var param2 = "some param2";
+	var param3 = "some param3";
+
+	var instance = pubsub.newInstance({
+		recurrent : true,
+		depth : 2
+	});
+
+	var subscription1 = instance.subscribe('hello/world', function(param1, param2) {
+		values.param1 = param1;
+	});
+	var subscription2 = instance.subscribe('hello/world/one', function(param1, param2) {
+		values.param2 = param2;
+	});
+	var subscriptionShouldNotExecute = instance.subscribe('hello', function(param1, param2, param3) {
+		values.param3 = param3;
+	});
+
+	instance.publish('hello/world/one/two', [param1, param2, param3]);
+
+	deepEqual(values, {param1 : param1, param2 : param2}, 'Values has proper value');
+	instance.unsubscribe(subscription1);
+	instance.unsubscribe(subscription2);
+	instance.unsubscribe(subscriptionShouldNotExecute);
 });
 
 test("Publish wildcard test (*)", function() {
