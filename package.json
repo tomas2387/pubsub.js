@@ -1,40 +1,44 @@
 {
-	"name": "pubsub.js",
-	"description": "Vanilla JS Pubsub implementation with wildcards and inheritance",
-	"version": "1.5.1",
-	"author": "Wojciech Dłubacz <wdsahadar@gmail.com>",
-	"directories" : {
-		"lib" : ".",
-		"test" : "test"
-	},
-	"contributors": [
-		"nehachaudhary <https://github.com/nehachaudhary>"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git@github.com:Sahadar/pubsub.js.git"
-	},
-	"keywords": [
-		"pubsub",
-		"listener",
-		"vanilla",
-		"pub/sub",
-		"publish/subscribe",
-		"publish",
-		"event",
-		"emitter",
-		"eventemitter",
-		"subscribe"
-	],
-	"devDependencies": {
-		"phantomjs-prebuilt": "*",
-		"qunit": "~0.7.7",
-		"qunit-phantomjs-runner": "~2.1.0"
-	},
-	"engines": {"node": ">= 0.6.x"},
-	"main": "pubsub.js",
-	"scripts": {
-		"test": "node_modules/.bin/phantomjs node_modules/qunit-phantomjs-runner/runner.js test/pubsub.html"
-	},
-	"license": "MIT"
+  "name": "pubsub.js",
+  "description": "Vanilla JS Pubsub implementation with wildcards and inheritance",
+  "version": "1.5.1",
+  "author": "Wojciech Dłubacz <wdsahadar@gmail.com>",
+  "directories": {
+    "lib": ".",
+    "test": "test"
+  },
+  "contributors": [
+    "nehachaudhary <https://github.com/nehachaudhary>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Sahadar/pubsub.js.git"
+  },
+  "keywords": [
+    "pubsub",
+    "listener",
+    "vanilla",
+    "pub/sub",
+    "publish/subscribe",
+    "publish",
+    "event",
+    "emitter",
+    "eventemitter",
+    "subscribe"
+  ],
+  "devDependencies": {
+    "eslint": "^3.13.0",
+    "phantomjs-prebuilt": "*",
+    "qunit": "~0.7.7",
+    "qunit-phantomjs-runner": "~2.1.0"
+  },
+  "engines": {
+    "node": ">= 0.6.x"
+  },
+  "main": "pubsub.js",
+  "scripts": {
+    "test": "node_modules/.bin/phantomjs node_modules/qunit-phantomjs-runner/runner.js test/pubsub.html",
+    "lint": "./node_modules/.bin/eslint pubsub.js"
+  },
+  "license": "MIT"
 }

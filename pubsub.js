@@ -1,5 +1,5 @@
-;(function(scope) {
-    /* global global,define,exports,pubsubConfig */
+(function(scope) {
+	/* global global,define */
 	'use strict';
 	var pubsubInstance;
 	var pubsubConfig = null;
@@ -13,7 +13,7 @@
 
 	function Pubsub(config) {
 		var _eventObject = {};
-        var _steroidsEvents = {};
+		var _steroidsEvents = {};
 		var options = {
 			separator : (config && config.separator) ? config.separator : '/',
 			recurrent : (config && typeof config.recurrent === 'boolean') ? config.recurrent : (false),
@@ -111,27 +111,6 @@
 			publish(nsObject, args, parts, params);
 		}
 
-
-		function executeSubscribeWildcard(nsObject, args, params) {
-			var parts = params.parts;
-			var async = params.async;
-			var nextPart = null;
-
-			if(parts.length === 0) {
-				executeCallback(nsObject._events, args, async);
-			} else {
-				nextPart = parts.shift();
-
-				if(nsObject[nextPart]) {
-					executeSubscribeWildcard(nsObject[nextPart], args, {
-						parts : parts,
-						async : async,
-						nsString : params.nsString
-					});
-				}
-			}
-		}
-
 		function subscribe(nsString, callback, params) {
 			var parts = nsString.split(options.separator),
 				nsObject, //Namespace object to which we attach event
@@ -144,15 +123,15 @@
 				context = callback;
 			}
 
-            //subscribe with steroids, if there was a publish for this event before, then get it!
-            if(steroids && _steroidsEvents[nsString]) {
-                if(options.log) {
-                    console.log('Subscribe with steroids -> immediate call to ', callback);
-                }
-                callback.apply(context, _steroidsEvents[nsString].args);
-            }
+			//subscribe with steroids, if there was a publish for this event before, then get it!
+			if(steroids && _steroidsEvents[nsString]) {
+				if(options.log) {
+					console.log('Subscribe with steroids -> immediate call to ', callback);
+				}
+				callback.apply(context, _steroidsEvents[nsString].args);
+			}
 
-            //Iterating through _eventObject to find proper nsObject
+			//Iterating through _eventObject to find proper nsObject
 			nsObject = _eventObject;
 			for(i = 0; i < parts.length; i += 1) {
 				if(typeof nsObject[parts[i]] === "undefined") {
@@ -180,12 +159,12 @@
 				eventObject = subscribeObject.event,
 				nsObject, parentNsObject;
 
-            if(nsString[nsString.length-1] === options.separator) {
-                nsString = nsString.slice(0, -1);
-            }
-            var parts = nsString.split(options.separator);
+			if(nsString[nsString.length - 1] === options.separator) {
+				nsString = nsString.slice(0, -1);
+			}
+			var parts = nsString.split(options.separator);
 
-            if(options.log) {
+			if(options.log) {
 				console.log('unsubscribe', nsString);
 			}
 
@@ -198,19 +177,19 @@
 					}
 					return null;
 				}
-                parentNsObject = nsObject;
+				parentNsObject = nsObject;
 				nsObject = nsObject[parts[i]];
 			}
 
-            if(!eventObject) {
-                delete parentNsObject[parts[parts.length - 1]];
-            } else {
-                forEach(nsObject._events, function(eventId) {
+			if(!eventObject) {
+				delete parentNsObject[parts[parts.length - 1]];
+			} else {
+				forEach(nsObject._events, function(eventId) {
 					if(nsObject._events[eventId] === eventObject) {
 						nsObject._events.splice(eventId, 1);
 					}
 				});
-            }
+			}
 		}
 
 		return {
@@ -238,11 +217,13 @@
 					return;
 				}
 
-                if(steroids) {
-                    _steroidsEvents[nsString] = {args:args};
-                }
+				if(steroids) {
+					_steroidsEvents[nsString] = { args:args };
+				}
 
-                if(options.log) console.groupCollapsed("publish", nsString, args, params);
+				if(options.log) {
+					console.groupCollapsed("publish", nsString, args, params);
+				}
 				publish(_eventObject, args, parts, {
 					recurrent : recurrent,
 					depth : depth,
@@ -251,7 +232,9 @@
 					nsString : nsString,
 					partsLength : partsLength
 				});
-                if(options.log) console.groupEnd();
+				if(options.log) {
+					console.groupEnd();
+				}
 			},
 			/**
 			 * Subscribe event
@@ -294,8 +277,7 @@
 					subscription = null;
 
 				function subscriptionCallback() {
-					var context = this;
-					callback.apply(context, arguments);
+					callback.apply(this, arguments);
 					self.unsubscribe(subscription);
 				}
 
@@ -310,13 +292,13 @@
 				var self = this;
 
 				if(typeof subscribeObject === "string") {
-                    var objeto = {
-                        namespace: subscribeObject,
-                        event: null
-                    };
-                    unsubscribe.apply(self, [objeto]);
-                } else if(subscribeObject instanceof Array) {
-                    //if we have array of callbacks - multiple subscription
+					var objeto = {
+						namespace: subscribeObject,
+						event: null
+					};
+					unsubscribe.apply(self, [objeto]);
+				} else if(subscribeObject instanceof Array) {
+					//if we have array of callbacks - multiple subscription
 					forEach(subscribeObject, function(number) {
 						var oneSubscribtion = subscribeObject[number];
 
