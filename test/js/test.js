@@ -571,4 +571,72 @@
 		privatePubsub.publish('hello/context');
 		privatePubsub.publish('hello/self');
 	});
+
+	test("Pubsub unsubscribe clears memory", function() {
+		var _pubsub = pubsub.newInstance();
+		var p = 1;
+		var subscription = _pubsub.subscribe('pencil', function() {
+			p = 2;
+		});
+		ok(JSON.stringify(_pubsub.__eventObject) === '{"pencil":{"_events":[{}]}}', JSON.stringify(_pubsub.__eventObject));
+
+		_pubsub.unsubscribe(subscription);
+        ok(JSON.stringify(_pubsub.__eventObject) === '{}', JSON.stringify(_pubsub.__eventObject));
+    });
+
+	test("Pubsub unsubscribe clears memory in multi-subscriptions", function() {
+		var _pubsub = pubsub.newInstance();
+		var p = 1;
+		var subscription = _pubsub.subscribe(['pencil', 'world'], function() {
+			p = 2;
+		});
+		ok(JSON.stringify(_pubsub.__eventObject) === '{"pencil":{"_events":[{}]},"world":{"_events":[{}]}}', JSON.stringify(_pubsub.__eventObject));
+
+		_pubsub.unsubscribe(subscription);
+        ok(JSON.stringify(_pubsub.__eventObject) === '{}', JSON.stringify(_pubsub.__eventObject));
+    });
+
+	test("Pubsub unsubscribe clears memory in namespace subscriptions", function() {
+		var _pubsub = pubsub.newInstance();
+		var p = 1;
+		var subscription1 = _pubsub.subscribe('pencil/world/best', function() {
+			p = 2;
+		});
+		var subscription2 = _pubsub.subscribe('pencil/world', function() {
+			p = 2;
+		});
+		ok(JSON.stringify(_pubsub.__eventObject) === '{"pencil":{"_events":[],"world":{"_events":[{}],"best":{"_events":[{}]}}}}', JSON.stringify(_pubsub.__eventObject));
+
+		_pubsub.unsubscribe(subscription1);
+        ok(JSON.stringify(_pubsub.__eventObject) === '{"pencil":{"_events":[],"world":{"_events":[{}]}}}', JSON.stringify(_pubsub.__eventObject));
+    });
+
+
+    test("Pubsub unsubscribe clears whole event memory in namespace subscriptions if there is no more sub-subscriptions", function() {
+        var _pubsub = pubsub.newInstance();
+        var p = 1;
+        var subscription1 = _pubsub.subscribe('pencil/world/best', function() {
+            p = 2;
+        });
+        ok(JSON.stringify(_pubsub.__eventObject) === '{"pencil":{"_events":[],"world":{"_events":[],"best":{"_events":[{}]}}}}', JSON.stringify(_pubsub.__eventObject));
+
+        _pubsub.unsubscribe(subscription1);
+        ok(JSON.stringify(_pubsub.__eventObject) === '{}', JSON.stringify(_pubsub.__eventObject));
+    });
+
+	test("Pubsub unsubscribe does not clears sub-events memory in namespace subscriptions that have events", function() {
+		var _pubsub = pubsub.newInstance();
+		var p = 1;
+		var subscription1 = _pubsub.subscribe('pencil/world/best', function() {
+			p = 2;
+		});
+		var subscription2 = _pubsub.subscribe('pencil/world', function() {
+			p = 2;
+		});
+		ok(JSON.stringify(_pubsub.__eventObject) === '{"pencil":{"_events":[],"world":{"_events":[{}],"best":{"_events":[{}]}}}}', JSON.stringify(_pubsub.__eventObject));
+
+		//We unsubscribe "pencil/world" but that does not mean "pencil/world/best" gets removed
+		_pubsub.unsubscribe(subscription2);
+        ok(JSON.stringify(_pubsub.__eventObject) === '{"pencil":{"_events":[],"world":{"_events":[],"best":{"_events":[{}]}}}}', JSON.stringify(_pubsub.__eventObject));
+    });
 })();

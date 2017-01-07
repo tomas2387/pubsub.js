@@ -166,31 +166,41 @@
 				return null;
 			}
 			var nsString = subscribeObject.namespace,
-				eventObject = subscribeObject.event,
 				parts = nsString.split(options.separator),
-				nsObject,
 				i = 0;
+            unsubscribeRecursive(_eventObject, subscribeObject, parts, i);
+		}
 
-			//Iterating through _eventObject to find proper nsObject
-			nsObject = _eventObject;
-			for(i = 0; i < parts.length; i += 1) {
-				if(typeof nsObject[parts[i]] === "undefined") {
-					if(options.log) {
-						console.error('There is no ' + nsString + ' subscription');
-					}
-					return null;
+		function unsubscribeRecursive(eventObject, subscribeObject, parts, i) {
+			if(i >= parts.length) return;
+            if(typeof eventObject[parts[i]] === "undefined") {
+                if(options.log) {
+					console.error('There is no ' + subscribeObject.namespace + ' subscription');
 				}
-				nsObject = nsObject[parts[i]];
+				return null;
 			}
 
-			forEach(nsObject._events, function(eventId) {
-				if(nsObject._events[eventId] === eventObject) {
-					nsObject._events.splice(eventId, 1);
-				}
-			});
+			unsubscribeRecursive(eventObject[parts[i]], subscribeObject, parts, i+1);
+
+            var subscription = eventObject[parts[i]];
+            forEach(subscription._events, function(eventId) {
+                if (subscription._events[eventId] === subscribeObject.event) {
+                    subscription._events.splice(eventId, 1);
+                }
+            });
+
+            //No more events? No more subscriptions? then clear
+            if (subscription._events.length === 0 && Object.keys(subscription).length === 1) {
+                delete eventObject[parts[i]];
+            }
 		}
 
 		return {
+            /**
+			 * @var {Object} __eventObject This is exposed only for testing purposes
+			 */
+			__eventObject: _eventObject,
+
 			/**
 			 * Publish event
 			 * @param nsString string namespace string splited by dots
